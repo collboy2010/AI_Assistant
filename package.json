@@ -1,7 +1,7 @@
 {
   "name": "ai-overlay",
-  "version": "2.0.0",
-  "description": "AI Chat Overlay 2.0 — лёгкий полупрозрачный AI-чат поверх всех окон",
+  "version": "1.0.0-beta",
+  "description": "AI Chat Overlay (Beta) — лёгкий полупрозрачный AI-чат поверх всех окон",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
