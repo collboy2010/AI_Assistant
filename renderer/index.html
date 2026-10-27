@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.anthropic.com https://api.deepseek.com; img-src 'self' data:;" />
+  <title>AI Chat Overlay</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- ═══ PROFILE & TRIAL TOKENS VIEW ═══ -->
+    <div id="profile-view" class="view hidden">
+      <div class="view-close-row">
+        <button id="profile-close-btn" class="btn-close-win" title="Свернуть (Esc)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="setup-content">
+        <div class="setup-logo" style="background:var(--bg-elevated);border-color:var(--border);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <h2>Профиль</h2>
+        <p class="setup-sub">Бесплатное тестирование (1000 токенов)</p>
+
+        <!-- Token Balance Card -->
+        <div class="token-card">
+          <div class="token-main-num">
+            <span id="trial-tokens-left">1000</span>
+            <span class="token-total-label">/ 1000 токенов</span>
+          </div>
+
+          <!-- Progress Bar with dynamic color (Green -> Yellow -> Red) -->
+          <div class="token-progress-track">
+            <div id="trial-progress-bar" class="token-progress-fill" style="width: 100%; background: #22c55e;"></div>
+          </div>
+
+          <div class="token-stats-row">
+            <div class="token-stat-item">
+              <span class="token-stat-lbl">Расход:</span>
+              <span id="trial-tokens-used" class="token-stat-val">0</span>
+            </div>
+            <div class="token-stat-item">
+              <span class="token-stat-lbl">Статус:</span>
+              <span id="trial-tokens-status" class="token-stat-val" style="color:#22c55e;">Активен</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;width:100%;max-width:320px;margin-top:16px;">
+          <button id="trial-reset-btn" class="btn-secondary" style="flex:1;padding:8px 12px;font-size:11px;">Сбросить до 1000</button>
+          <button id="profile-back-btn" class="btn-accent" style="flex:1;padding:8px 12px;font-size:11px;margin-bottom:0;">Назад в чат</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SETTINGS VIEW ═══ -->
+    <div id="settings-view" class="view hidden">
+      <div class="view-close-row">
+        <button id="settings-close-btn" class="btn-close-win" title="Свернуть (Esc)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="setup-content">
+        <h2>Параметры</h2>
+        <p class="setup-sub">Настройка отображения</p>
+
+        <div class="settings-row" style="margin-top: 10px;">
+          <span class="settings-label">Прозрачность окна</span>
+          <div class="slider-group">
+            <input type="range" id="opacity-slider" min="50" max="100" value="70" class="slider" />
+            <span id="opacity-val" class="slider-val">70%</span>
+          </div>
+        </div>
+
+        <div class="settings-row" style="margin-top: 16px; margin-bottom: 8px;">
+          <span class="settings-label">Масштаб интерфейса</span>
+          <div class="scale-controls">
+            <button id="scale-down" class="btn-scale">−</button>
+            <span id="scale-val" class="scale-display">100%</span>
+            <button id="scale-up" class="btn-scale">+</button>
+          </div>
+        </div>
+
+        <div class="theme-section">
+          <span class="settings-label" style="margin-bottom: 8px; display: block;">Тема</span>
+          <div class="theme-row-label">Тёмные</div>
+          <div class="theme-picker" id="theme-picker">
+            <button class="theme-swatch active" data-theme="graphite" title="Графит">
+              <span class="swatch-color" style="background: #d4a017;"></span>
+              <span class="swatch-label">Графит</span>
+            </button>
+            <button class="theme-swatch" data-theme="cobalt" title="Кобальт">
+              <span class="swatch-color" style="background: #58a6ff;"></span>
+              <span class="swatch-label">Кобальт</span>
+            </button>
+            <button class="theme-swatch" data-theme="ember" title="Уголь">
+              <span class="swatch-color" style="background: #ef6040;"></span>
+              <span class="swatch-label">Уголь</span>
+            </button>
+          </div>
+          <div class="theme-row-label" style="margin-top: 8px;">Светлые</div>
+          <div class="theme-picker">
+            <button class="theme-swatch" data-theme="graphite-light" title="Графит Light">
+              <span class="swatch-color" style="background: #c49010;"></span>
+              <span class="swatch-label">Графит</span>
+            </button>
+            <button class="theme-swatch" data-theme="cobalt-light" title="Кобальт Light">
+              <span class="swatch-color" style="background: #0969da;"></span>
+              <span class="swatch-label">Кобальт</span>
+            </button>
+            <button class="theme-swatch" data-theme="ember-light" title="Уголь Light">
+              <span class="swatch-color" style="background: #d84828;"></span>
+              <span class="swatch-label">Уголь</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Custom Accent Trigger -->
+        <div class="settings-row" style="margin-top: 14px; margin-bottom: 4px;">
+          <span class="settings-label">Свой цвет акцента</span>
+          <button id="open-color-modal-btn" class="btn-secondary" style="width:auto;max-width:none;padding:5px 12px;font-size:11px;display:flex;align-items:center;gap:6px;">
+            <span id="custom-color-indicator" style="width:10px;height:10px;border-radius:50%;background:var(--accent);display:inline-block;"></span>
+            <span>Палитра RGB...</span>
+          </button>
+        </div>
+
+        <!-- Hotkey settings -->
+        <div class="settings-row" style="margin-top: 14px; margin-bottom: 2px;">
+          <span class="settings-label">Горячие клавиши</span>
+          <input type="text" id="hotkey-input" class="hotkey-input" value="Ctrl+Shift+Space" readonly title="Нажмите для смены клавиш" />
+        </div>
+        <p class="hotkey-hint-note">Если забудете сочетание, окно всегда можно открыть через иконку в трее или запустив ярлык.</p>
+
+        <button id="settings-back-btn" class="btn-accent" style="margin-top: 12px;">Готово</button>
+      </div>
+    </div>
+
+    <!-- ═══ MODELS VIEW ═══ -->
+    <div id="models-view" class="view hidden">
+      <div class="models-header-bar">
+        <div class="models-header-title">
+          <h2>Управление моделями</h2>
+          <span class="models-header-sub">Добавление, редактирование и группировка</span>
+        </div>
+        <div class="models-header-actions">
+          <button id="models-back-btn" class="btn-secondary models-top-back-btn">Назад в чат</button>
+          <button id="models-close-btn" class="btn-close-win" title="Свернуть (Esc)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="models-layout">
+        <!-- Левая колонка: форма параметров -->
+        <div class="models-panel-left">
+          <div class="models-panel-title" id="models-form-title">Добавить модель</div>
+
+          <div class="models-form-group">
+            <label class="models-form-label">Провайдер</label>
+            <select id="om-provider" class="provider-select">
+              <option value="gemini">Google Gemini</option>
+              <option value="openai">OpenAI</option>
+              <option value="anthropic">Anthropic</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="custom">Кастомный / Локальный (Custom)</option>
+            </select>
+          </div>
+
+          <div id="om-custom-group-field" class="models-form-group hidden">
+            <label class="models-form-label">Имя провайдера / Группа</label>
+            <input type="text" id="om-custom-provider" placeholder="Напр. Ollama, OpenRouter, Groq" spellcheck="false" autocomplete="off" />
+          </div>
+
+          <div id="om-url-field" class="models-form-group hidden">
+            <label class="models-form-label">Endpoint URL</label>
+            <input type="text" id="om-url" placeholder="http://localhost:11434/v1" spellcheck="false" autocomplete="off" />
+          </div>
+
+          <div class="models-form-group" id="om-key-group">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <label class="models-form-label">API Ключ</label>
+              <a href="#" id="om-get-key-link" class="setup-link" style="font-size:10px;">Получить ключ →</a>
+            </div>
+            <input type="password" id="om-api-key" placeholder="AIzaSy... или sk-..." spellcheck="false" autocomplete="off" />
+          </div>
+
+          <div class="models-form-group">
+            <label class="models-form-label">ID модели</label>
+            <input type="text" id="om-id" placeholder="Напр. gpt-4o, llama3:8b" spellcheck="false" autocomplete="off" />
+          </div>
+
+          <div class="models-form-actions">
+            <button id="om-save-btn" class="btn-accent" style="margin-bottom:0;flex:1;">Добавить модель</button>
+            <button id="om-cancel-edit-btn" class="btn-secondary hidden" style="margin-bottom:0;width:auto;padding:6px 10px;">Отмена</button>
+          </div>
+        </div>
+
+        <!-- Правая колонка: сгруппированный список -->
+        <div class="models-panel-right">
+          <div class="models-panel-title">Список моделей</div>
+          <div id="models-list" class="models-grouped-list">
+            <div class="models-empty">Нет добавленных моделей</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ CHAT VIEW ═══ -->
+    <div id="chat-view" class="view hidden">
+
+      <!-- Header -->
+      <div class="header">
+        <div class="header-left">
+          <button id="sidebar-toggle-btn" class="btn-header-key" title="История диалогов">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <img src="../assets/icon.png" style="width:22px;height:22px;border-radius:5px;margin:0 5px;" alt="" />
+          <span class="header-title">AI Assistant</span>
+        </div>
+        <div class="header-right">
+          <button id="export-chat-btn" class="btn-header-key" title="Экспорт диалога">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+          <button id="profile-btn" class="btn-header-key" title="Профиль и токены (1000)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </button>
+          <select id="model-select" class="model-select" title="Выбор модели">
+            <option value="">Нет моделей</option>
+          </select>
+          <button id="models-mgr-btn" class="btn-header-key" title="Управление моделями">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+          <button id="close-btn" class="btn-close-win" title="Свернуть (Esc)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main layout -->
+      <div class="chat-main-layout">
+        <!-- Sidebar -->
+        <aside id="chat-sidebar" class="chat-sidebar">
+          <div class="sidebar-header">
+            <button id="sidebar-new-chat-btn" class="sidebar-new-btn"><span>+</span> Новый чат</button>
+          </div>
+          <div class="sidebar-search">
+            <input type="text" id="sidebar-search-input" placeholder="Поиск диалогов..." spellcheck="false" autocomplete="off" />
+          </div>
+          <div id="sidebar-chats-list" class="sidebar-chats-list"></div>
+          <div class="sidebar-footer">
+            <span>AI Overlay v0.20</span>
+          </div>
+        </aside>
+
+        <!-- Chat content -->
+        <div class="chat-content-pane">
+          <div class="chat-area" id="chat-area">
+            <div class="welcome" id="welcome-msg">
+              <div class="welcome-icon"><img src="../assets/icon.png" style="width:58px;height:58px;border-radius:14px;" alt="" /></div>
+              <p>Напиши вопрос или сделай скриншот</p>
+              <span class="shortcut-tag">Ctrl+Shift+Space</span>
+            </div>
+          </div>
+
+          <!-- Screenshot preview -->
+          <div id="screenshot-preview" class="screenshot-bar hidden">
+            <img id="screenshot-img" src="" alt="" />
+            <span>Скриншот прикреплён</span>
+            <button id="remove-screenshot" class="btn-x" title="Убрать">✕</button>
+          </div>
+
+          <!-- Bottom bar -->
+          <div class="bottom-bar">
+            <button id="settings-btn" class="btn-bar" title="Настройки">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
+            <textarea id="message-input" class="input-field" placeholder="Спроси что-нибудь..." rows="1"></textarea>
+            <button id="screenshot-btn" class="btn-bar btn-screenshot" title="Скриншот экрана">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </button>
+            <button id="send-btn" class="btn-bar btn-send" title="Отправить">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ APP-WIDE MODALS (accessible from any view) ═══ -->
+
+    <!-- Export Modal -->
+    <div id="export-overlay-modal" class="modal-backdrop hidden">
+      <div class="modal-card" style="max-width:360px;">
+        <div class="modal-header">
+          <h3>Экспорт диалога</h3>
+          <button id="export-close-btn" class="btn-x">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:8px;">
+          <button id="export-overlay-md" class="btn-secondary" style="text-align:left;padding:8px 12px;">Markdown (.md)</button>
+          <button id="export-overlay-json" class="btn-secondary" style="text-align:left;padding:8px 12px;">JSON (.json)</button>
+          <button id="export-overlay-txt" class="btn-secondary" style="text-align:left;padding:8px 12px;">Обычный текст (.txt)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div id="confirm-delete-modal" class="modal-backdrop hidden">
+      <div class="modal-card" style="max-width:360px;">
+        <div class="modal-header">
+          <h3 id="confirm-delete-title">Подтверждение</h3>
+          <button id="confirm-delete-close-btn" class="btn-x">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;padding:16px 14px;">
+          <p id="confirm-delete-text" style="font-size:12px;color:var(--text-dim);line-height:1.45;margin:0;">Вы уверены?</p>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button id="cancel-delete-btn" class="btn-secondary" style="max-width:none;width:auto;flex:1;padding:7px 12px;font-size:11px;">Отмена</button>
+            <button id="confirm-delete-btn" class="btn-accent" style="max-width:none;width:auto;flex:1;padding:7px 12px;font-size:11px;margin-bottom:0;background:var(--danger);color:#fff;">Удалить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Color Modal -->
+    <div id="custom-color-modal" class="modal-backdrop hidden">
+      <div class="modal-card modal-card-color">
+        <div class="modal-header">
+          <h3>Палитра своего цвета</h3>
+          <button id="custom-color-close-btn" class="btn-x">✕</button>
+        </div>
+        <div class="modal-body custom-color-body">
+          <div class="color-picker-wrap">
+            <canvas id="color-wheel" width="160" height="160"></canvas>
+            <div class="color-picker-controls">
+              <div class="color-ctrl-item">
+                <span class="color-ctrl-title">Яркость</span>
+                <input type="range" id="color-brightness" min="10" max="100" value="82" class="slider" style="width:100%;" />
+              </div>
+              <div class="color-ctrl-item">
+                <span class="color-ctrl-title">Выбранный оттенок</span>
+                <div class="color-preview-row">
+                  <div id="color-preview" class="color-preview-swatch"></div>
+                  <span id="color-hex-val" class="color-hex-label">#d4a017</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="color-modal-footer">
+            <button id="color-reset-btn" class="btn-secondary" style="flex:1;padding:8px 12px;font-size:12px;">Сброс</button>
+            <button id="color-apply-btn" class="btn-accent" style="flex:1;padding:8px 12px;font-size:12px;margin-bottom:0;">Применить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <script src="chat.js"></script>
+</body>
+</html>

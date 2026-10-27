@@ -1,0 +1,48 @@
+{
+  "name": "ai-overlay",
+  "version": "2.0.0",
+  "description": "AI Chat Overlay 2.0 — лёгкий полупрозрачный AI-чат поверх всех окон",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win",
+    "build:installer": "electron-builder --win nsis",
+    "build:portable": "electron-builder --win portable",
+    "build:all": "electron-builder --win nsis portable"
+  },
+  "build": {
+    "appId": "com.ai-overlay.app",
+    "productName": "AI Chat Overlay",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "AI Chat Overlay",
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-Portable.${ext}"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "assets/**/*"
+    ]
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^26.15.3"
+  }
+}
